@@ -4,6 +4,8 @@ Copyright © 2023 NAME HERE <EMAIL ADDRESS>
 package cmd
 
 import (
+	"os"
+
 	"github.com/spf13/cobra"
 
 	"github.com/programzheng/black-key-proxy/internal/server"
@@ -20,7 +22,12 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		port := args[0]
+		port := ""
+		if len(args) == 0 {
+			port = os.Getenv("GRPC_PORT")
+		} else {
+			port = args[0]
+		}
 		server.RunGrpcServer(port)
 	},
 }

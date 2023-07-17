@@ -7,6 +7,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 
 	"github.com/programzheng/black-key-proxy/cmd"
+	_ "github.com/programzheng/black-key-proxy/internal/model"
 )
 
 func main() {
