@@ -15,8 +15,15 @@ const (
 	DELETE Method = "DELETE"
 )
 
+type Decode string
+
+const (
+	ProxyImageUrl Decode = "proxy_image_url"
+)
+
 type Relay struct {
 	gorm.Model
 	Method Method `gorm:"default:'GET'"`
 	Uri    string
+	Decode Decode
 }

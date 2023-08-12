@@ -2,7 +2,11 @@ package service
 
 import (
 	"database/sql"
+	"encoding/json"
+	"fmt"
+	"io"
 	"log"
+	"net/http"
 
 	"github.com/programzheng/black-key-proxy/internal/model"
 )
@@ -57,8 +61,47 @@ func getImageUrlByReplyEvent(re *model.RelayEvent) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	if r.Decode != "" && r.Uri != "" {
+		switch r.Decode {
+		case model.ProxyImageUrl:
+			piudo, err := sendProxyImageUrlHttpRequest(string(r.Method), r.Uri)
+			if err != nil {
+				return "", err
+			}
+			return piudo.Url, nil
+		}
+	}
 
 	return r.Uri, nil
+}
+
+type ProxyImageUrlDataObject struct {
+	Url string `json:"url"`
+}
+
+func sendProxyImageUrlHttpRequest(method string, uri string) (*ProxyImageUrlDataObject, error) {
+	req, err := http.NewRequest(method, uri, nil)
+	if err != nil {
+		return nil, err
+	}
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("invalid response status code:%d", response.StatusCode)
+	}
+	body, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	piudo := &ProxyImageUrlDataObject{}
+	err = json.Unmarshal(body, &piudo)
+	if err != nil {
+		return nil, err
+	}
+
+	return piudo, nil
 }
 
 func SendGetImageUrlByRelayEventDataObject(do *RelayEventDataObject) *SendGetImageUrlByRelayEventDataObjectResults {
